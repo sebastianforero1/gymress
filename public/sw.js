@@ -2,11 +2,12 @@
 const CACHE = "gymres-cache-v1";
 // Lista de los archivos esenciales (el "esqueleto" de la aplicación) que se guardarán en la caché.
 const ASSETS = [
-    "./",
-    "./index.html",
-    "./assets/styles.css",
-    "./assets/app.js",
-    "./assets/img/logo.png"
+    "/",
+    "/index.html",
+    "/assets/main.css",
+    "/assets/main.js",
+    "/assets/img/logo.png",
+    "/manifest.webmanifest"
 ];
 
 // Evento 'install': Se dispara cuando el Service Worker se registra por primera vez.
