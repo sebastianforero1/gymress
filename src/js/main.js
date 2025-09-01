@@ -34,9 +34,9 @@ window.addEventListener("hashchange", () => {
 
 // Se ejecuta cuando el DOM inicial está completamente cargado.
 window.addEventListener("DOMContentLoaded", () => {
-    // Determina la ruta inicial. Si hay un usuario en el estado, va a 'home' (o a la ruta en el hash).
-    // Si no hay usuario, la ruta inicial es 'login'.
-    const first = AppState.user ? (location.hash.replace("#/", "") || "home") : "login";
+    // Determina la ruta inicial. Si hay sesión activa, va a 'home' (o a la ruta en el hash).
+    // Si no hay sesión, la ruta inicial es 'login'.
+    const first = AppState.loggedIn ? (location.hash.replace("#/", "") || "home") : "login";
     // Si no hay un hash en la URL, lo establece para que la URL refleje el estado inicial.
     if (!location.hash) location.hash = `#/${first}`;
     // Renderiza la vista inicial.
@@ -47,5 +47,5 @@ window.addEventListener("DOMContentLoaded", () => {
 // Comprueba si el navegador soporta Service Workers.
 if ("serviceWorker" in navigator) {
     // Espera a que toda la página se cargue (evento 'load') antes de registrar el SW para no afectar el rendimiento inicial.
-    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+    window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
 }

@@ -1,3 +1,5 @@
+@use "variables" as *;
+
 // Reseteo universal del modelo de caja.
 // `border-box` hace que el padding y el borde se incluyan dentro del ancho y alto total del elemento,
 // lo que facilita mucho el diseño de layouts.

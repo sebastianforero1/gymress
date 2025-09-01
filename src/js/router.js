@@ -1,7 +1,7 @@
 // --- IMPORTACIONES ---
 // Utilidades del DOM, plantillas de UI, componentes y estado global.
 import { $, $$ } from "./util/dom.js";
-import { Screens } from "./ui/templates.js";
+import { Screens } from "./ui/templates/index.js";
 import { activateTab } from "./ui/components.js";
 import StorageService from "./services/StorageService.base.js";
 // Se importan los parciales para "extender" la clase StorageService con sus métodos.
@@ -101,11 +101,11 @@ function paintHours(day, selectedHour, editingId) {
     });
 }
 
-/** Muestra u oculta la barra de navegación superior (ej. la oculta en la pantalla de login). */
-function toggleHeader(route) {
-    const topbar = document.querySelector(".topbar");
-    if (!topbar) return;
-    topbar.classList.toggle("hidden", route === "login");
+/** Muestra u oculta las barras de navegación según la ruta. */
+function toggleChrome(route) {
+    const hide = route === "login" || route === "register";
+    document.querySelector(".topbar")?.classList.toggle("hidden", hide);
+    document.querySelector(".bottombar")?.classList.toggle("hidden", hide);
 }
 
 /** Valida los campos del formulario de login. */
@@ -125,8 +125,8 @@ export function render(requestedRoute) {
         // Si la ruta no existe, redirige a 'login'.
         let route = routes[requestedRoute] ? requestedRoute : "login";
 
-        // "Guardia de autenticación": si no hay usuario y la ruta no es 'login', fuerza a 'login'.
-        if (!AppState.user && route !== "login") {
+        // "Guardia de autenticación": si no hay sesión activa y la ruta no es pública, fuerza a 'login'.
+        if (!AppState.loggedIn && route !== "login" && route !== "register") {
             route = "login";
             if (location.hash !== "#/login") location.hash = "#/login";
         }
@@ -139,7 +139,7 @@ export function render(requestedRoute) {
             save(); // Guarda estos nuevos valores en el estado.
         }
 
-        toggleHeader(route);
+        toggleChrome(route);
 
         // Obtiene el HTML de la plantilla y lo inserta en el DOM.
         const view = routes[route]();
@@ -154,16 +154,44 @@ export function render(requestedRoute) {
                 const user = {
                     apto: $("#apto")?.value.trim(),
                     torre: $("#torre")?.value.trim(),
-                    cedula: $("#cc")?.value.trim(),
-                    nombre: $("#nombre")?.value?.trim() || undefined
+                    cedula: $("#cc")?.value.trim()
                 };
                 const err = validateLogin(user);
                 if (err) { const m = $("#loginMsg"); if (m) m.textContent = err; return; }
-                store.setUser(user);
+                const registered = store.getUser();
+                if (!registered) { alert("Debe registrarse primero."); return; }
+                if (registered.apto !== user.apto || registered.torre !== user.torre || registered.cedula !== user.cedula) {
+                    const m = $("#loginMsg"); if (m) m.textContent = "Datos incorrectos."; return;
+                }
+                store.login();
                 location.hash = "#/home";
             };
             $("#btnLogin")?.addEventListener("click", submit);
-            $$("#apto, #torre, #cc, #nombre").forEach(i => i?.addEventListener("keydown", e => {
+            $$("#apto, #torre, #cc").forEach(i => i?.addEventListener("keydown", e => {
+                if (e.key === "Enter") submit();
+            }));
+            return;
+        }
+
+        if (route === "register") {
+            const submit = () => {
+                const user = {
+                    nombre: $("#nombreReg")?.value.trim(),
+                    apto: $("#aptoReg")?.value.trim(),
+                    torre: $("#torreReg")?.value.trim(),
+                    cedula: $("#ccReg")?.value.trim()
+                };
+                const err = validateLogin(user);
+                if (!user.nombre) {
+                    const m = $("#registerMsg"); if (m) m.textContent = "El nombre es obligatorio."; return;
+                }
+                if (err) { const m = $("#registerMsg"); if (m) m.textContent = err; return; }
+                store.setUser(user);
+                alert("Registro exitoso");
+                location.hash = "#/login";
+            };
+            $("#btnRegister")?.addEventListener("click", submit);
+            $$("#nombreReg, #aptoReg, #torreReg, #ccReg").forEach(i => i?.addEventListener("keydown", e => {
                 if (e.key === "Enter") submit();
             }));
             return;
@@ -248,6 +276,11 @@ export function render(requestedRoute) {
                     save();
                 })
             );
+            $("#btnLogout")?.addEventListener("click", () => {
+                store.logout();
+                alert("Sesión cerrada");
+                location.hash = "#/login";
+            });
             return;
         }
 
@@ -262,6 +295,7 @@ export function render(requestedRoute) {
 // Asocia cada nombre de ruta con su función de plantilla correspondiente.
 const routes = {
     login: Screens.login,
+    register: Screens.register,
     home: Screens.home,
     reservas: Screens.reservas,
     "mis-reservas": Screens.misReservas,

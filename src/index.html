@@ -10,20 +10,14 @@
     <meta name="theme-color" content="#000000" />
 
     <!-- Enlaces a recursos de la PWA (Progressive Web App) y estilos -->
-    <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="icon" href="./assets/img/logo.png">
-    <link rel="stylesheet" href="./assets/styles.css?v=1">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/assets/img/logo.png">
+    <link rel="stylesheet" href="/styles/main.scss">
 
     <title>GymRes</title>
 
     <!-- Estilos en línea para una carga rápida de la fuente y el color de fondo, evitando un "flash" de contenido sin estilo. -->
     <style>
-        @font-face {
-            font-family: "Inter";
-            src: url("./assets/fonts/Inter.woff2") format("woff2");
-            font-display: swap
-                /* La fuente se muestra con una de respaldo mientras carga */
-        }
 
         html,
         body {
@@ -77,8 +71,8 @@
         </button>
     </nav>
 
-    <!-- Carga el archivo JavaScript principal. `defer` asegura que se ejecute después de que el HTML se haya analizado. -->
-    <script src="./assets/app.js?v=1" defer></script>
+    <!-- Carga el archivo JavaScript principal como módulo -->
+    <script type="module" src="/js/main.js"></script>
 </body>
 
 </html>
