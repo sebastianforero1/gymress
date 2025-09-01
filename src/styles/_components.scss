@@ -1,3 +1,6 @@
+@use "variables" as *;
+@use "layout" as l;
+
 .input {
     width: 100%;
     padding: .9rem 1rem;
@@ -14,7 +17,7 @@
 
     // Estilo para cada tarjeta de KPI individual.
     .kpi {
-        @extend .card; // Hereda los estilos de la clase .card.
+        @include l.card; // Incluye los estilos de la clase .card.
         text-align: center;
     }
 }
@@ -25,7 +28,7 @@
 
     // Estilo para cada elemento de la lista.
     .item {
-        @extend .card; // Hereda los estilos de la clase .card.
+        @include l.card; // Incluye los estilos de la clase .card.
         font-weight: 700;
         text-align: center;
     }
@@ -35,7 +38,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    @extend .card; // Hereda los estilos de la clase .card.
+    @include l.card; // Incluye los estilos de la clase .card.
 
     // El cuerpo del interruptor.
     .switch {

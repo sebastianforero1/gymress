@@ -1,3 +1,13 @@
+@use "variables" as *;
+
+@mixin card {
+    background: #fff;
+    border-radius: $radius;
+    padding: 1rem;
+    box-shadow: $shadow;
+    border: 1px solid $color-muted;
+}
+
 /* Define una variable CSS global para simular un marco de teléfono, limitando el ancho del contenido. */
 :root {
     --frame: 420px;
@@ -71,11 +81,7 @@
 
 /* Estilos para componentes de UI comunes */
 .card {
-    background: #fff;
-    border-radius: $radius;
-    padding: 1rem;
-    box-shadow: $shadow;
-    border: 1px solid $color-muted;
+    @include card;
 }
 
 .chips {
