@@ -5,6 +5,8 @@
 export const AppState = {
   // Almacena los datos del usuario que ha iniciado sesión. Es `null` si nadie ha iniciado sesión.
   user: null,
+  // Indica si la sesión del usuario está activa.
+  loggedIn: false,
   // Un array que contiene todos los objetos de reserva. Cada reserva tiene un id, día y hora.
   reservas: [],
   // Información sobre la ocupación actual del gimnasio.
@@ -27,9 +29,10 @@ export function load() {
   const raw = localStorage.getItem(KEY);
   // Si existe un estado guardado...
   if (raw) {
-    // ...lo convierte de JSON a un objeto y lo fusiona con el AppState.
-    // `Object.assign` actualiza las propiedades de AppState con las guardadas.
-    Object.assign(AppState, JSON.parse(raw));
+    const data = JSON.parse(raw);
+    for (const k in data) {
+      AppState[k] = data[k];
+    }
   }
 }
 
