@@ -10,6 +10,6 @@ export default () => html`
   <button class="btn-primary" id="btnLogin">Iniciar Sesion</button>
   <p id="loginMsg" style="text-align:center; margin-top:.5rem; color:#666;">&nbsp;</p>
   <p style="text-align:center; margin-top:1rem;">
-    <a data-go="register">Registrarse</a>
+    <a data-go="register"><u>Registrarse</u></a>
   </p>
 </section>`;

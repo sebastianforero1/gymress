@@ -8,3 +8,9 @@ import config from "./config.js";
 import estado from "./estado.js";
 
 export const Screens = { login, register, home, reservas, misReservas, perfil, config, estado };
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(console.error);
+  });
+}

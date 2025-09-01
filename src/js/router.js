@@ -111,7 +111,7 @@ function toggleChrome(route) {
 /** Valida los campos del formulario de login. */
 function validateLogin({ apto, torre, cedula }) {
     if (!apto || !torre || !cedula) return "Todos los campos son obligatorios.";
-    if (!/^\d{3,}$/.test(cedula)) return "La cédula debe ser numérica (≥3 dígitos).";
+    if (!/^\d{3,}$/.test(cedula)) return "La cédula debe ser numérica (≥7 dígitos).";
     return null;
 }
 

@@ -11,6 +11,6 @@ export default () => html`
   <button class="btn-primary" id="btnRegister">Crear Cuenta</button>
   <p id="registerMsg" style="text-align:center; margin-top:.5rem; color:#666;">&nbsp;</p>
   <p style="text-align:center; margin-top:1rem;">
-    <a data-go="login">Volver</a>
+    <a data-go="login"><u>Volver</u></a>
   </p>
 </section>`;

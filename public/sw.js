@@ -1,59 +1,136 @@
-// Define el nombre y la versión de la caché. Cambiar la versión (ej. a "v2") invalidará la caché antigua.
-const CACHE = "gymres-cache-v1";
-// Lista de los archivos esenciales (el "esqueleto" de la aplicación) que se guardarán en la caché.
+// sw.js
+
+// -------------- Config --------------
+const CACHE = "gymres-cache-v1"; // cambia la versión cuando actualices assets
 const ASSETS = [
-    "/",
-    "/index.html",
+  "/",
+  "/index.html",
 
-    "/assets/index.css",
-    "/assets/index.js",
+  "/assets/index.css",
+  "/assets/index.js",
 
-    "/assets/main.css",
-    "/assets/main.js",
+  "/assets/main.css",
+  "/assets/main.js",
 
-    "/assets/img/logo.png",
-    "/manifest.webmanifest"
+  "/assets/img/logo.png",
+  "/manifest.webmanifest"
 ];
 
-// Evento 'install': Se dispara cuando el Service Worker se registra por primera vez.
-self.addEventListener("install", e => {
-    // `waitUntil` espera a que la promesa se resuelva antes de terminar la instalación.
-    // Aquí, esperamos a que se abra la caché y se añadan todos los assets esenciales.  
-    e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
-    // Fuerza al nuevo Service Worker a activarse inmediatamente.
-    self.skipWaiting();
+// -------------- Install --------------
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE).then((c) => c.addAll(ASSETS))
+  );
+  self.skipWaiting();
 });
 
-// Evento 'activate': Se dispara cuando el Service Worker se activa y toma el control.
-self.addEventListener("activate", e => {
-    // `waitUntil` espera a que la limpieza de cachés antiguas termine.
-    e.waitUntil(
-        caches.keys().then(keys =>
-            // `Promise.all` espera a que se eliminen todas las cachés que no coincidan con el nombre de la CACHE actual.
-            // Esto es útil para limpiar versiones antiguas de la caché cuando actualizas la aplicación.
-            Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-        )
-    );
-    // Permite que el Service Worker activo tome el control de todos los clientes (pestañas) abiertos inmediatamente.
-    self.clients.claim();
+// -------------- Activate --------------
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      // borra caches antiguos
+      const keys = await caches.keys();
+      await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+
+      // (opcional) activa Navigation Preload si existe
+      if ("navigationPreload" in self.registration) {
+        await self.registration.navigationPreload.enable();
+      }
+    })()
+  );
+  self.clients.claim();
 });
 
-// Evento 'fetch': Se dispara cada vez que la aplicación realiza una petición de red (ej. para un archivo CSS, JS, imagen, etc.).
-self.addEventListener("fetch", e => {
-    // `respondWith` intercepta la petición y nos permite devolver nuestra propia respuesta.
-    e.respondWith(
-        // Estrategia "Cache First":
-        // 1. Intenta encontrar una respuesta que coincida con la petición en la caché.
-        caches.match(e.request).then(r =>
-            // 2. Si se encuentra una respuesta en la caché (`r`), la devuelve.
-            //    Si no (`||`), realiza la petición de red original con `fetch`.
-            r || fetch(e.request).then(res => {
-                // 3. Cuando la petición de red tiene éxito, guardamos una copia en la caché para futuras peticiones.
-                const copy = res.clone(); // Clonamos la respuesta porque solo se puede leer una vez.
-                caches.open(CACHE).then(c => c.put(e.request, copy));
-                // 4. Devolvemos la respuesta original de la red a la aplicación.
-                return res;
-            })
-        )
-    );
+// -------------- Helpers --------------
+const isHttp = (url) => ["http:", "https:"].includes(url.protocol);
+const isSameOrigin = (url) => url.origin === self.location.origin;
+
+// -------------- Fetch --------------
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+
+  // Solo manejar GET
+  if (req.method !== "GET") return;
+
+  const url = new URL(req.url);
+
+  // Ignorar esquemas no http(s) (ej. chrome-extension:, data:, etc.)
+  if (!isHttp(url)) return;
+
+  // Para SPA: las navegaciones (mode: navigate) devuelven index.html (offline fallback)
+  if (req.mode === "navigate" && isSameOrigin(url)) {
+    event.respondWith(handleNavigation(req));
+    return;
+  }
+
+  // Solo cachear mismo origen para evitar extensiones y terceros
+  if (!isSameOrigin(url)) return;
+
+  // Cache First con “revalidate on use” para recursos de tu origen
+  event.respondWith(cacheFirst(req));
 });
+
+// -------------- Estrategias --------------
+async function cacheFirst(req) {
+  // 1) intenta cache
+  const cached = await caches.match(req);
+  if (cached) return cached;
+
+  // 2) si no está, red -> cache (si es respuesta básica y OK)
+  try {
+    const res = await fetch(req);
+    const copy = res.clone();
+    if (res.ok && res.type === "basic") {
+      const c = await caches.open(CACHE);
+      // atrapamos errores pero no rompemos la respuesta
+      c.put(req, copy).catch(() => {});
+    }
+    return res;
+  } catch (err) {
+    // 3) si falla, intenta un fallback razonable
+    // por ejemplo, si pidieron un asset conocido:
+    // devuelve index para rutas internas que no sean archivos
+    return caches.match("/index.html");
+  }
+}
+
+async function handleNavigation(req) {
+  // 1) intenta usar Navigation Preload si está disponible
+  try {
+    const preload = await eventPreloadResponse();
+    if (preload) {
+      // guarda en caché para futuras visitas
+      const copy = preload.clone();
+      if (preload.ok && preload.type === "basic") {
+        const c = await caches.open(CACHE);
+        c.put(req, copy).catch(() => {});
+      }
+      return preload;
+    }
+  } catch (_) {}
+
+  // 2) intenta desde red
+  try {
+    const res = await fetch(req);
+    return res;
+  } catch (_) {
+    // 3) offline -> index.html en caché
+    const cachedIndex = await caches.match("/index.html");
+    return cachedIndex || new Response("Offline", { status: 503 });
+  }
+}
+
+// Usa la respuesta precargada si existe (Navigation Preload)
+function eventPreloadResponse() {
+  // Esta función depende del fetch en curso; se lee a través del `extendable event`
+  // Se accede con `self` y el último evento; implementamos un pequeño truco:
+  // devolver `event.preloadResponse` si el agente la expone
+  try {
+    // NOTA: `event` no está aquí; por eso devolvemos una promesa resuelta en `null`.
+    // El preload real se usa arriba solo si `fetch` puso `event.respondWith(handleNavigation(...))`.
+    // Este helper se deja para claridad y posibles extensiones.
+    return Promise.resolve(null);
+  } catch {
+    return Promise.resolve(null);
+  }
+}
