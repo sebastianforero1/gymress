@@ -4,8 +4,13 @@ const CACHE = "gymres-cache-v1";
 const ASSETS = [
     "/",
     "/index.html",
+
     "/assets/index.css",
     "/assets/index.js",
+
+    "/assets/main.css",
+    "/assets/main.js",
+
     "/assets/img/logo.png",
     "/manifest.webmanifest"
 ];
