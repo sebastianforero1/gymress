@@ -1,8 +1,9 @@
 import { html } from "../../util/dom.js";
+import logoUrl from "../../../assets/img/logo.png";
 
 export default () => html`
 <section class="screen">
-  <img src="./assets/img/logo.png" alt="GymRes" class="login-logo"/>
+  <img src="${logoUrl}" alt="GymRes" class="login-logo"/>
   <h2 style="text-align:center; letter-spacing:.06em;">REGISTRARSE</h2>
   <input id="nombreReg" class="input" placeholder="Nombre" autocomplete="off">
   <input id="aptoReg"  class="input" placeholder="Apartamento" autocomplete="off">
