@@ -27,6 +27,6 @@ export default () => html`
     </div>
   </div>
 
-  <div class="card" style="min-height:80px">Resumen de la proxima reserva</div>
+  
   <button class="btn-primary" data-go="reservas">Nueva Reserva</button>
 </section>`;

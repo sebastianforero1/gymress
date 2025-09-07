@@ -8,6 +8,6 @@ export default () => html`
   <p style="text-align:center; font-weight:700;">
     ${AppState.user ? `${AppState.user.nombre || "Residente"}<br>Apto ${AppState.user.apto} torre ${AppState.user.torre}` : "Invitado"}
   </p>
-  <div class="card"><strong>ESTADISTICAS DE USO:</strong><br>Reservas esta semana:</div>
+  
   <button class="btn-primary" data-go="config">Configuración</button>
 </section>`;

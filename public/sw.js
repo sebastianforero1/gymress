@@ -1,7 +1,7 @@
 // sw.js
 
 // -------------- Config --------------
-const CACHE = "gymres-cache-v1"; // cambia la versión cuando actualices assets
+const CACHE = "gymres-cache-v1"; // cambia la versión cuando se actualicen assets
 const ASSETS = [
   "/",
   "/index.html",
