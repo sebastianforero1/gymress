@@ -1,7 +1,7 @@
 # GymRes (SPA - Vanilla JS)
 
 **Visualiza el proyecto aquí:**  
-👉 [gymres.netlify.app](https://gymres.netlify.app)
+👉 [gymres.netlify.app](https://gymress.netlify.app)
 
 ## Instalación y ejecución
 
